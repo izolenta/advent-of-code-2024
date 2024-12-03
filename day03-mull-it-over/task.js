@@ -18,7 +18,7 @@ const star2 = () => {
     while (index < input.length) {
         const next = input.indexOf(enabled ? "don't()" : "do()", index);
         if (next === -1) {
-            mod += input.slice(index);
+            if (enabled) mod += input.slice(index);
             break;
         }
         mod += enabled ? input.slice(index, next) : "";
