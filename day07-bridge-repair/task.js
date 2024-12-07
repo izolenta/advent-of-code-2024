@@ -57,7 +57,7 @@ const solve = (includeConcat = false) => {
     }, 0);
 }
 
-const star1 = () => solve(false);
+const star1 = () => solve();
 const star2 = () => solve(true);
 
 const main = () => {
