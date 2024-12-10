@@ -18,7 +18,7 @@ const readData = () => {
 }
 
 const findPaths = (data, width, height, x, y, distinct) => {
-    const paths = distinct ? new Set() : [];
+    const paths = [];
     const queue = [[x, y, 0]];
     let queueIndex = 0;
 
@@ -27,7 +27,7 @@ const findPaths = (data, width, height, x, y, distinct) => {
 
         if (current === 9) {
             const path = `${x},${y}`;
-            distinct ? paths.add(path) : paths.push(path);
+            paths.push(path);
             continue;
         }
 
@@ -44,7 +44,7 @@ const findPaths = (data, width, height, x, y, distinct) => {
         }
     }
 
-    return distinct ? paths.size : paths.length;
+    return distinct ? new Set(paths).size : paths.length;
 }
 
 const solve = distinct => {
