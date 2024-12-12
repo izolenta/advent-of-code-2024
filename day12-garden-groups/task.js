@@ -88,8 +88,8 @@ const calcNumberOfPolygonCorners = (blocks) => {
         if (handled.has(wall)) continue;
 
         const [xStr, yStr, dir] = wall.split(',');
-        const x = parseFloat(xStr);
-        const y = parseFloat(yStr);
+        const x = parseInt(xStr);
+        const y = parseInt(yStr);
 
         if (dir === 'v') {
             corners += (walls.has(`${x},${y},h`) || walls.has(`${x-1},${y},h`) ? 1 : 0) +
