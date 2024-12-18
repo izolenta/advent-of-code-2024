@@ -12,22 +12,25 @@ const readData = isReal => {
 };
 
 const findShortestPath = (data, start, end, dimension) => {
-    const obstacles = new Set(data.map(({x, y}) => `${x},${y}`));
-    const queue = [{...start, distance: 0}];
+    const obstacles = new Set(data.map(({ x, y }) => `${x},${y}`));
+    const queue = [{ ...start, distance: 0 }];
     const visited = new Set([`${start.x},${start.y}`]);
     const parentMap = new Map([[`${start.x},${start.y}`, null]]);
+
+    const reconstructPath = (current) => {
+        const path = [];
+        while (current) {
+            path.unshift({ x: current.x, y: current.y });
+            current = parentMap.get(`${current.x},${current.y}`);
+        }
+        return path;
+    };
 
     while (queue.length) {
         const current = queue.shift();
 
         if (current.x === end.x && current.y === end.y) {
-            const path = [];
-            let step = current;
-            while (step) {
-                path.unshift({ x: step.x, y: step.y });
-                step = parentMap.get(`${step.x},${step.y}`);
-            }
-            return path;
+            return reconstructPath(current);
         }
 
         for (const [dx, dy] of directions) {
