@@ -17,7 +17,7 @@ const readData = isReal => {
 };
 
 const findShortestPath = (data, start, end, [width, height]) => {
-    const queue = [{...start, distance: 0}];
+    const queue = [start];
     const visited = new Set([`${start.x},${start.y}`]);
     const parents = new Map([[`${start.x},${start.y}`, null]]);
 
@@ -40,7 +40,7 @@ const findShortestPath = (data, start, end, [width, height]) => {
             if (x < 0 || x >= width || y < 0 || y >= height || data[y][x] === '#' || visited.has(key)) continue;
 
             visited.add(key);
-            queue.push({x, y, distance: curr.distance + 1});
+            queue.push({x, y});
             parents.set(key, curr);
         }
     }
