@@ -1,5 +1,7 @@
 const fs = require('fs');
 
+const directions = [[0, -1], [1, 0], [0, 1], [-1, 0]];
+
 const readData = isReal => {
     const data = fs.readFileSync(isReal ? './inputs/real.data' : './inputs/test.data', 'utf8').trim().split('\n');
     const start = {}, end = {};
@@ -15,7 +17,6 @@ const readData = isReal => {
 };
 
 const findShortestPath = (data, start, end, [width, height]) => {
-    const dirs = [[0, -1], [1, 0], [0, 1], [-1, 0]];
     const queue = [{...start, distance: 0}];
     const visited = new Set([`${start.x},${start.y}`]);
     const parents = new Map([[`${start.x},${start.y}`, null]]);
@@ -32,7 +33,7 @@ const findShortestPath = (data, start, end, [width, height]) => {
             return path;
         }
 
-        for (const [dx, dy] of dirs) {
+        for (const [dx, dy] of directions) {
             const x = curr.x + dx, y = curr.y + dy;
             const key = `${x},${y}`;
 
