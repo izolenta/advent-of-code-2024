@@ -78,10 +78,10 @@ const star2 = () => {
 
 const main = () => {
     console.time('star1');
-    console.log(`🎄: ${star1()}`);
+    console.log(`🎅: ${star1()}`);
     console.timeEnd('star1');
     console.time('star2');
-    console.log(`🎄🎄: ${star2()}`);
+    console.log(`🎅🎅: ${star2()}`);
     console.timeEnd('star2');
 };
 
