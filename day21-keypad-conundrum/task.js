@@ -103,6 +103,7 @@ const getButtonSequence = (data, depth = 2) => {
             for (let p of paths) {
                 let indepth = p;
                 for (let i=0; i<depth; i++) {
+                    console.log(i)
                     indepth  = getNumpadSequence(indepth)
                 }
                 if (indepth.length < shortest) {
@@ -116,6 +117,7 @@ const getButtonSequence = (data, depth = 2) => {
         }
         let indepth = path.join('');
         for (let i=0; i<depth; i++) {
+            console.log(indepth)
             indepth  = getNumpadSequence(indepth)
         }
         console.log(next)
@@ -126,36 +128,53 @@ const getButtonSequence = (data, depth = 2) => {
     return res;
 }
 
-const cache = new Set();
+const cache = new Map();
 
 const getNumpadSequence = (data) => {
     let path = [];
     let x = 2;
     let y = 0;
-    for (let sym of data.split('')) {
-        const button = actionPad.find(button => button.button === sym);
-        const difx = x - button.x;
-        const dify = y - button.y;
-        if (button.x === 0) {
-            for (let i=0;i<Math.abs(dify);i++) {
-                path.push(dify < 0? 'v': '^')
-            }
-            for (let i=0;i<Math.abs(difx);i++) {
-                path.push(difx < 0? '>': '<')
-            }
+    const aStrings = data.split(/(?<=A)/);
+    for (let str of aStrings) {
+        if (cache.has(str)) {
+            path.push(cache.get(str))
+            continue;
         }
-        else {
-            for (let i=0;i<Math.abs(difx);i++) {
-                path.push(difx < 0? '>': '<')
+        let val = '';
+        for (let sym of str.split('')) {
+            const button = actionPad.find(button => button.button === sym);
+            const difx = x - button.x;
+            const dify = y - button.y;
+            if (button.x === 0) {
+                for (let i=0;i<Math.abs(dify);i++) {
+                    const add = dify < 0? 'v': '^'
+                    path.push(add)
+                    val+=add
+                }
+                for (let i=0;i<Math.abs(difx);i++) {
+                    const add = difx < 0? '>': '<';
+                    val+=add
+                    path.push(add)
+                }
             }
-            for (let i=0;i<Math.abs(dify);i++) {
-                path.push(dify < 0? 'v': '^')
+            else {
+                for (let i=0;i<Math.abs(difx);i++) {
+                    const add = difx < 0? '>': '<';
+                    val+=add
+                    path.push(add)
+                }
+                for (let i=0;i<Math.abs(dify);i++) {
+                    const add = dify < 0? 'v': '^'
+                    path.push(add)
+                    val+=add
+                }
             }
+            path.push('A');
+            val+='A';
+            x = button.x;
+            y = button.y;
         }
-        path.push('A');
-        x = button.x;
-        y = button.y;
-        //cache.add()
+        cache.set(str, val);
     }
     return path.join('');
 }
