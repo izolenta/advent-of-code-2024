@@ -122,7 +122,37 @@ const getButtonSequence = (data, depth = 2) => {
     return res;
 }
 
-const cache = new Map();
+function sortDirectionalPaths(paths) {
+    const priority = {'<': 0, '^': 1, 'v': 2, '>': 3};
+
+    function countTurns(path) {
+        let turns = 0;
+        for (let i = 1; i < path.length; i++) {
+            if (path[i] !== path[i-1]) {
+                turns++;
+            }
+        }
+        return turns;
+    }
+
+    return paths.sort((a, b) => {
+        const turnsA = countTurns(a);
+        const turnsB = countTurns(b);
+
+        if (turnsA !== turnsB) {
+            return turnsA - turnsB;
+        }
+
+        const minLen = Math.min(a.length, b.length);
+        for (let i = 0; i < minLen; i++) {
+            if (a[i] !== b[i]) {
+                return priority[a[i]] - priority[b[i]];
+            }
+        }
+
+        return a.length - b.length;
+    });
+}
 
 const calcNumpadSequenceLength = (data, maxDepth, depth = 0,  depthCache = new Map()) => {
     if (depthCache.has(`${data}-${depth}`)) {
@@ -136,29 +166,9 @@ const calcNumpadSequenceLength = (data, maxDepth, depth = 0,  depthCache = new M
         let val = '';
         for (let sym of str.split('')) {
             const button = actionPad.find(button => button.button === sym);
-            const difx = x - button.x;
-            const dify = y - button.y;
-            if (button.x === 0) {
-                for (let i=0;i<Math.abs(dify);i++) {
-                    const add = dify < 0? 'v': '^'
-                    val+=add
-                }
-                for (let i=0;i<Math.abs(difx);i++) {
-                    const add = difx < 0? '>': '<';
-                    val+=add
-                }
-            }
-            else {
-                for (let i=0;i<Math.abs(difx);i++) {
-                    const add = difx < 0? '>': '<';
-                    val+=add
-                }
-                for (let i=0;i<Math.abs(dify);i++) {
-                    const add = dify < 0? 'v': '^'
-                    val+=add
-                }
-            }
-            val+='A';
+            const paths = findShortestPaths([x, y], [button.x, button.y], [3, 2], [0, 0]);
+            sortDirectionalPaths(paths);
+            val+=`${paths[0]}A`;
             x = button.x;
             y = button.y;
         }
@@ -185,10 +195,10 @@ const star2 = () => {
 
 const main = () => {
     console.time('star1');
-    console.log(`🎄: ${star1()}`);
+    console.log(`🎅: ${star1()}`);
     console.timeEnd('star1');
     console.time('star2');
-    console.log(`🎄🎄: ${star2()}`);
+    console.log(`🎅🎅: ${star2()}`);
     console.timeEnd('star2');
 };
 
