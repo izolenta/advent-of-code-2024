@@ -101,13 +101,9 @@ const getButtonSequence = (data, depth = 2) => {
             let shortest = Infinity
             let shortestPath = '';
             for (let p of paths) {
-                let indepth = p;
-                for (let i=0; i<depth; i++) {
-                    console.log(i)
-                    indepth  = getNumpadSequence(indepth)
-                }
-                if (indepth.length < shortest) {
-                    shortest = indepth.length;
+                let indepth  = calcNumpadSequenceLength(p, depth)
+                if (indepth < shortest) {
+                    shortest = indepth;
                     shortestPath = p;
                 }
             }
@@ -115,31 +111,26 @@ const getButtonSequence = (data, depth = 2) => {
             y = button.y;
             path.push(shortestPath);
         }
-        let indepth = path.join('');
-        for (let i=0; i<depth; i++) {
-            console.log(indepth)
-            indepth  = getNumpadSequence(indepth)
-        }
+        let indepth  = calcNumpadSequenceLength(path.join(''), depth)
         console.log(next)
         console.log(path.join(''))
         console.log(indepth)
-        res += parseInt(next)*indepth.length;
+        res += parseInt(next)*indepth;
     }
     return res;
 }
 
 const cache = new Map();
 
-const getNumpadSequence = (data) => {
-    let path = [];
-    let x = 2;
-    let y = 0;
+const calcNumpadSequenceLength = (data, maxDepth, depth = 0,  depthCache = new Map()) => {
+    if (depthCache.has(`${data}-${depth}`)) {
+        return depthCache.get(`${data}-${depth}`);
+    }
+    let sum = 0;
     const aStrings = data.split(/(?<=A)/);
     for (let str of aStrings) {
-        if (cache.has(str)) {
-            path.push(cache.get(str))
-            continue;
-        }
+        let x = 2;
+        let y = 0;
         let val = '';
         for (let sym of str.split('')) {
             const button = actionPad.find(button => button.button === sym);
@@ -148,45 +139,46 @@ const getNumpadSequence = (data) => {
             if (button.x === 0) {
                 for (let i=0;i<Math.abs(dify);i++) {
                     const add = dify < 0? 'v': '^'
-                    path.push(add)
                     val+=add
                 }
                 for (let i=0;i<Math.abs(difx);i++) {
                     const add = difx < 0? '>': '<';
                     val+=add
-                    path.push(add)
                 }
             }
             else {
                 for (let i=0;i<Math.abs(difx);i++) {
                     const add = difx < 0? '>': '<';
                     val+=add
-                    path.push(add)
                 }
                 for (let i=0;i<Math.abs(dify);i++) {
                     const add = dify < 0? 'v': '^'
-                    path.push(add)
                     val+=add
                 }
             }
-            path.push('A');
             val+='A';
             x = button.x;
             y = button.y;
         }
-        cache.set(str, val);
+        if (depth === maxDepth-1) {
+            sum+=val.length;
+        }
+        else {
+            sum+=calcNumpadSequenceLength(val, maxDepth, depth+1, depthCache)
+        }
     }
-    return path.join('');
+    depthCache.set(`${data}-${depth}`, sum);
+    return sum;
 }
 
 const star1 = () => {
-    const data = readData(true);
+    const data = readData(false);
     return getButtonSequence(data);
 };
 
 const star2 = () => {
     const data = readData(true);
-    return getButtonSequence(data, 25);
+    return getButtonSequence(data, 24);
 };
 
 const main = () => {
