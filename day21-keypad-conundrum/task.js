@@ -1,5 +1,12 @@
 const fs = require('fs');
 
+const directions = {
+    '<': [-1, 0],
+    '>': [1, 0],
+    '^': [0, -1],
+    'v': [0, 1]
+};
+
 const codePad = [
     {button: '7', x:0, y:0},
     {button: '8', x:1, y:0},
@@ -20,74 +27,69 @@ const actionPad = [
     {button: 'v', x:1, y:1},
     {button: '<', x:0, y:1},
     {button: '>', x:2, y:1},
-]
+];
 
 const readData = isReal => {
     return fs.readFileSync(isReal ? './inputs/real.data' : './inputs/test.data', 'utf8').trim().split('\n');
 };
 
-function findShortestPaths(startX, startY, endX, endY) {
-    const paths = [];
-    let shortestLength = Infinity;
-    const visited = new Set();
+function findShortestPaths(start, end, keypadSize, blockedCell = null) {
+    const shortestPaths = [];
+    let shortestDistance = Infinity;
 
-    function getButtonAt(x, y) {
-        return codePad.find(button => button.x === x && button.y === y);
-    }
+    const queue = [{ cell: start, path: '', distance: 0 }];
 
-    function getNeighbors(x, y) {
-        const directions = [[-1, 0, '<'], [0, 1, 'v'], [1, 0, '>'], [0, -1, '^']];
+    const bestDistForCell = new Map();
+    bestDistForCell.set(start.toString(), 0);
 
-        return directions
-            .map(([dx, dy, symbol]) => ({x: x + dx, y: y + dy, move: symbol}))
-            .filter(pos => getButtonAt(pos.x, pos.y));
-    }
+    while (queue.length) {
+        const { cell, path, distance } = queue.shift();
+        const [x, y] = cell;
 
-    function dfs(currentX, currentY, path) {
-        if (path.length > shortestLength) {
-            return;
+        if (x === end[0] && y === end[1]) {
+            if (distance < shortestDistance) {
+                shortestDistance = distance;
+                shortestPaths.length = 0; // clear old paths
+                shortestPaths.push(path);
+            } else if (distance === shortestDistance) {
+                shortestPaths.push(path);
+            }
+            continue;
         }
 
-        if (currentX === endX && currentY === endY) {
-            if (path.length < shortestLength) {
-                paths.length = 0;
-                shortestLength = path.length;
-            }
-            if (path.length > 0) {
-                paths.push(path.join(''));
-            }
-            return;
+        if (distance >= shortestDistance) {
+            continue;
         }
 
-        const neighbors = getNeighbors(currentX, currentY);
+        for (const [dir, [dx, dy]] of Object.entries(directions)) {
+            const newX = x + dx;
+            const newY = y + dy;
+            if (
+                newX >= 0 && newX < keypadSize[0] &&
+                newY >= 0 && newY < keypadSize[1] &&
+                !(blockedCell && newX === blockedCell[0] && newY === blockedCell[1])
+            ) {
+                const newCell = [newX, newY];
+                const nextDistance = distance + 1;
 
-        for (const neighbor of neighbors) {
-            const posKey = `${neighbor.x},${neighbor.y}`;
-
-            if (!visited.has(posKey)) {
-                visited.add(posKey);
-                path.push(neighbor.move);
-
-                dfs(neighbor.x, neighbor.y, path);
-
-                path.pop();
-                visited.delete(posKey);
+                const prevDistance = bestDistForCell.get(newCell.toString());
+                if (
+                    prevDistance === undefined ||
+                    nextDistance <  prevDistance ||
+                    nextDistance === prevDistance
+                ) {
+                    bestDistForCell.set(newCell.toString(), nextDistance);
+                    queue.push({
+                        cell: newCell,
+                        path: path + dir,
+                        distance: nextDistance
+                    });
+                }
             }
         }
     }
 
-    const startButton = getButtonAt(startX, startY);
-    const endButton = getButtonAt(endX, endY);
-
-    if (!startButton || !endButton) {
-        return paths;
-    }
-
-    const startPosKey = `${startX},${startY}`;
-    visited.add(startPosKey);
-    dfs(startX, startY, []);
-
-    return paths;
+    return shortestPaths;
 }
 
 const getButtonSequence = (data, depth = 2) => {
@@ -97,7 +99,7 @@ const getButtonSequence = (data, depth = 2) => {
         let path = [];
         for (let sym of next.split('')) {
             const button = codePad.find(button => button.button === sym);
-            let paths = findShortestPaths(x, y, button.x, button.y).map(path => path+'A');
+            let paths = findShortestPaths([x, y], [button.x, button.y], [3, 4], [0, 3]).map(path => path+'A');
             let shortest = Infinity
             let shortestPath = '';
             for (let p of paths) {
@@ -172,13 +174,13 @@ const calcNumpadSequenceLength = (data, maxDepth, depth = 0,  depthCache = new M
 }
 
 const star1 = () => {
-    const data = readData(false);
+    const data = readData(true);
     return getButtonSequence(data);
 };
 
 const star2 = () => {
     const data = readData(true);
-    return getButtonSequence(data, 24);
+    return getButtonSequence(data, 25);
 };
 
 const main = () => {
