@@ -99,7 +99,7 @@ const star2 = () => {
     return max;
 };
 
-function star2Optimized() {
+const star2Optimized = () => {
     const data = readData(true);
     const numBuyers = data.length;
 
